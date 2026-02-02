@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wing Shop - Demand Forecasting Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                    <h1>Wing Shop</h1>
+                </div>
+                <p class="subtitle">Inventory & Demand Forecasting Dashboard</p>
+            </div>
+            <div class="header-actions">
+                <span class="status-badge">
+                    <span class="status-dot"></span>
+                    Live Data
+                </span>
+            </div>
+        </header>
+
+        <!-- Filters -->
+        <div class="filters-bar">
+            <div class="filter-group">
+                <label for="product-select">Product Category</label>
+                <select id="product-select">
+                    <option value="">All Products</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="store-select">Store</label>
+                <select id="store-select">
+                    <option value="">All Stores</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="forecast-days">Forecast Period</label>
+                <select id="forecast-days">
+                    <option value="7">7 Days</option>
+                    <option value="14">14 Days</option>
+                    <option value="30">30 Days</option>
+                </select>
+            </div>
+            <button id="refresh-btn" class="btn-primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M23 4v6h-6"></path>
+                    <path d="M1 20v-6h6"></path>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                </svg>
+                Refresh
+            </button>
+        </div>
+
+        <!-- Metrics Cards -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-icon blue">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="1" x2="12" y2="23"></line>
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                    </svg>
+                </div>
+                <div class="metric-content">
+                    <p class="metric-label">Daily Average Sales</p>
+                    <p class="metric-value" id="daily-avg">--</p>
+                    <p class="metric-subtitle">units/day</p>
+                </div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-icon green">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                        <polyline points="17 6 23 6 23 12"></polyline>
+                    </svg>
+                </div>
+                <div class="metric-content">
+                    <p class="metric-label">Weekly Sales</p>
+                    <p class="metric-value" id="weekly-total">--</p>
+                    <p class="metric-change" id="weekly-change">--</p>
+                </div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-icon purple">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                </div>
+                <div class="metric-content">
+                    <p class="metric-label">Forecast Accuracy</p>
+                    <p class="metric-value" id="accuracy">--</p>
+                    <p class="metric-subtitle">MAPE: <span id="mape">--</span>%</p>
+                </div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-icon orange">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                </div>
+                <div class="metric-content">
+                    <p class="metric-label">Stock Alerts</p>
+                    <p class="metric-value" id="alerts-count">--</p>
+                    <p class="metric-subtitle">items need attention</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Chart Section -->
+            <div class="chart-section">
+                <div class="section-header">
+                    <h2>Sales Forecast</h2>
+                    <div class="chart-legend">
+                        <span class="legend-item">
+                            <span class="legend-color historical"></span>
+                            Historical
+                        </span>
+                        <span class="legend-item">
+                            <span class="legend-color forecast"></span>
+                            Forecast
+                        </span>
+                        <span class="legend-item">
+                            <span class="legend-color confidence"></span>
+                            95% CI
+                        </span>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="forecast-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- Inventory Table -->
+            <div class="inventory-section">
+                <div class="section-header">
+                    <h2>Inventory Status</h2>
+                    <span class="badge">Real-time</span>
+                </div>
+                <div class="table-container">
+                    <table class="inventory-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Current Stock</th>
+                                <th>Daily Demand</th>
+                                <th>Days Left</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-body">
+                            <!-- Populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Wing Shop Demand Forecasting System | Cambodia Economic Recovery Initiative</p>
+            <p class="footer-subtitle">Powered by Time-Series Analysis (Moving Average, ARIMA, Prophet)</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

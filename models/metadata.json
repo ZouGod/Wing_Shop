@@ -1,0 +1,27 @@
+{
+  "last_training_date": "2026-01-30T15:57:56.860877",
+  "data_date_range": {
+    "start": "2013-01-02T00:00:00",
+    "end": "2017-08-15T00:00:00"
+  },
+  "total_records": 1679,
+  "categories": [
+    "GROCERY I",
+    "BEVERAGES",
+    "GROCERY II",
+    "BREAD/BAKERY",
+    "PRODUCE",
+    "DAIRY",
+    "MEATS",
+    "FROZEN FOODS",
+    "BEAUTY",
+    "CLEANING"
+  ],
+  "models_trained": [
+    "Moving Average",
+    "Exponential Smoothing",
+    "SARIMA",
+    "Prophet",
+    "Random Forest"
+  ]
+}
