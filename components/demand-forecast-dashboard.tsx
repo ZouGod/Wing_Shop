@@ -31,9 +31,7 @@ export function DemandForecastDashboard() {
                 <p className="text-sm text-muted-foreground">Inventory & Demand Forecasting</p>
               </div>
             </div>
-            <Badge variant="outline" className="border-chart-2 text-chart-2">
-              Cambodia Market
-            </Badge>
+            <img src="/wingshop.png" alt="Wing Shop Logo" className="h-8 w-auto" />
           </div>
         </div>
       </header>

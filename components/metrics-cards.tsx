@@ -2,6 +2,7 @@
 
 import { Card, CardContent } from "@/components/ui/card"
 import { TrendingUp, TrendingDown, Package, AlertTriangle, Target, DollarSign } from "lucide-react"
+import { useState, useEffect } from "react"
 import { products } from "./product-selector"
 import { generateHistoricalData, calculateForecast } from "@/lib/forecast-utils"
 
@@ -10,8 +11,21 @@ interface MetricsCardsProps {
 }
 
 export function MetricsCards({ selectedProduct }: MetricsCardsProps) {
-  const historicalData = generateHistoricalData(selectedProduct, 90)
-  const forecast = calculateForecast(historicalData, 7)
+  const [historicalData, setHistoricalData] = useState<any[]>([])
+  const [forecast, setForecast] = useState<any[]>([])
+  const [isLoaded, setIsLoaded] = useState(false)
+
+  useEffect(() => {
+    const data = generateHistoricalData(selectedProduct, 90)
+    const pred = calculateForecast(data, 7)
+    setHistoricalData(data)
+    setForecast(pred)
+    setIsLoaded(true)
+  }, [selectedProduct])
+
+  if (!isLoaded) {
+    return <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" />
+  }
   const product = products.find((p) => p.id === selectedProduct)
 
   const avgDailySales = Math.round(historicalData.slice(-30).reduce((sum, d) => sum + d.sales, 0) / 30)
