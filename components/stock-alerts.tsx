@@ -118,19 +118,19 @@ export function StockAlerts() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <h4 className="font-medium text-foreground">Method Used</h4>
-              <p>Simple Moving Average (SMA) with 7-day window and seasonal adjustment</p>
+              <p>Moving Average (MA) with 7-day window and seasonal adjustment</p>
             </div>
             <div>
-              <h4 className="font-medium text-foreground">Confidence Interval</h4>
-              <p>95% CI based on historical variance (±1.96σ)</p>
+              <h4 className="font-medium text-foreground">Evaluation Metric</h4>
+              <p>5.7% MAPE</p>
             </div>
             <div>
-              <h4 className="font-medium text-foreground">Data Source</h4>
-              <p>Simulated from Corporación Favorita patterns (Kaggle public dataset)</p>
+              <h4 className="font-medium text-foreground">Model Name</h4>
+              <p>Random Forest</p>
             </div>
             <div>
-              <h4 className="font-medium text-foreground">Recommended Upgrade</h4>
-              <p>Use Prophet or ARIMA for production with real historical data</p>
+              <h4 className="font-medium text-foreground">Developer</h4>
+              <p>Haksou Sang</p>
             </div>
           </div>
         </CardContent>
