@@ -109,9 +109,9 @@ export function DemandForecastDashboard() {
         {/* Data Source Attribution */}
         <footer className="mt-8 border-t border-border pt-4">
           <p className="text-center text-xs text-muted-foreground">
-            Data simulated based on Corporación Favorita grocery sales patterns (Kaggle public dataset).
+            Wing Tower Building, Preah Moinivong Blvd corner Kampuchea Kroam, Sangkat Monurom, Khan Prampir Meakara, Phnom Penh
             <br />
-            Forecasting method: Simple Moving Average with seasonal adjustment.
+            © 2026 Wing Bank (Cambodia) Plc
           </p>
         </footer>
       </main>
