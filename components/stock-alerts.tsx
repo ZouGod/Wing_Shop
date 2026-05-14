@@ -6,38 +6,70 @@ import { Button } from "@/components/ui/button"
 import { AlertTriangle, TrendingUp, Package, Calendar } from "lucide-react"
 import { products } from "./product-selector"
 import { generateHistoricalData, calculateForecast } from "@/lib/forecast-utils"
+import { useState, useEffect } from "react"
 
 export function StockAlerts() {
-  const alerts = products
-    .map((product) => {
-      const historical = generateHistoricalData(product.id, 30)
-      const forecast = calculateForecast(historical, 7)
-      const avgDaily = Math.round(historical.reduce((sum, d) => sum + d.sales, 0) / 30)
+  const [alerts, setAlerts] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
-      const daysOfStock = 2 + Math.random() * 8
-      const currentStock = Math.round(avgDaily * daysOfStock)
-      const stockoutRisk = currentStock < avgDaily * 3
+  useEffect(() => {
+    const loadAlerts = async () => {
+      const alertsData = await Promise.all(
+        products.map(async (product) => {
+          const historical = await generateHistoricalData(product.id, 100)
+          const forecast = calculateForecast(historical, 7)
+          
+          // Calculate actual averages from all historical data
+          const avgDaily = Math.round(historical.reduce((sum, d) => sum + d.sales, 0) / Math.max(historical.length, 1))
+          const latestSales = historical[historical.length - 1]?.sales || avgDaily
 
-      // Calculate demand spike
-      const recentAvg = historical.slice(-7).reduce((sum, d) => sum + d.sales, 0) / 7
-      const previousAvg = historical.slice(-14, -7).reduce((sum, d) => sum + d.sales, 0) / 7
-      const demandSpike = recentAvg > previousAvg * 1.2
+          // Current stock based on 7 days of inventory
+          const currentStock = Math.round(avgDaily * 7)
+          const stockoutRisk = currentStock < avgDaily * 3
 
-      return {
-        product,
-        currentStock,
-        avgDaily,
-        daysUntilStockout: Math.round(currentStock / avgDaily),
-        stockoutRisk,
-        demandSpike,
-        demandChange: (((recentAvg - previousAvg) / previousAvg) * 100).toFixed(1),
-      }
-    })
-    .filter((a) => a.stockoutRisk || a.demandSpike)
+          // Calculate actual demand spike from real data
+          const recentAvg = historical.slice(-7).length > 0 
+            ? historical.slice(-7).reduce((sum, d) => sum + d.sales, 0) / 7
+            : avgDaily
+          const previousAvg = historical.slice(-14, -7).length > 0
+            ? historical.slice(-14, -7).reduce((sum, d) => sum + d.sales, 0) / 7
+            : avgDaily
+          const demandChange = previousAvg > 0 ? ((recentAvg - previousAvg) / previousAvg) * 100 : 0
+          const demandSpike = Math.abs(demandChange) > 20 // More than 20% change
+
+          // Calculate days until stockout
+          const daysUntilStockout = avgDaily > 0 ? Math.round(currentStock / avgDaily) : 0
+
+          return {
+            product,
+            currentStock,
+            avgDaily,
+            latestSales,
+            daysUntilStockout,
+            stockoutRisk,
+            demandSpike,
+            demandChange: demandChange.toFixed(1),
+            forecastedDemand: Math.round(forecast.reduce((sum, d) => sum + d.predicted, 0) / 7),
+          }
+        })
+      )
+      // Show alerts for products with stock risk or significant demand changes
+      const filteredAlerts = alertsData.filter((a) => a.stockoutRisk || a.demandSpike)
+      setAlerts(filteredAlerts)
+      setIsLoading(false)
+    }
+    loadAlerts()
+  }, [])
 
   return (
     <div className="space-y-4">
-      {alerts.length === 0 ? (
+      {isLoading ? (
+        <Card>
+          <CardContent className="flex items-center justify-center py-12">
+            <p className="text-muted-foreground">Loading stock alerts...</p>
+          </CardContent>
+        </Card>
+      ) : alerts.length === 0 ? (
         <Card>
           <CardContent className="flex items-center justify-center py-12">
             <div className="text-center">
@@ -87,6 +119,7 @@ export function StockAlerts() {
                     Days Until Stockout
                   </div>
                   <p className="mt-1 text-2xl font-semibold text-foreground">{alert.daysUntilStockout} days</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Avg Daily: {alert.avgDaily.toLocaleString()}</p>
                 </div>
                 <div className="rounded-lg bg-muted p-3">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -99,9 +132,15 @@ export function StockAlerts() {
                     {Number.parseFloat(alert.demandChange) > 0 ? "+" : ""}
                     {alert.demandChange}%
                   </p>
+                  <p className="mt-1 text-xs text-muted-foreground">Forecasted: {alert.forecastedDemand.toLocaleString()}/day</p>
                 </div>
-                <div className="flex items-center justify-center">
-                  <Button className="w-full">Create Reorder</Button>
+                <div className="rounded-lg bg-muted p-3">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Package className="h-4 w-4" />
+                    Current Stock
+                  </div>
+                  <p className="mt-1 text-2xl font-semibold text-foreground">{alert.currentStock.toLocaleString()}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{alert.product.unit}</p>
                 </div>
               </div>
             </CardContent>

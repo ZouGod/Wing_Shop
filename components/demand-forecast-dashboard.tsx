@@ -56,7 +56,7 @@ export function DemandForecastDashboard() {
         </div>
 
         {/* Metrics */}
-        <MetricsCards selectedProduct={selectedProduct} />
+        <MetricsCards selectedProduct={selectedProduct} forecastPeriod={Number.parseInt(forecastPeriod)} />
 
         {/* Main Content */}
         <Tabs defaultValue="forecast" className="mt-6">
