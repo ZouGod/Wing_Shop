@@ -161,7 +161,7 @@ export function StockAlerts() {
             </div>
             <div>
               <h4 className="font-medium text-foreground">Evaluation Metric</h4>
-              <p>5.7% MAPE</p>
+              <p>6.68% MAPE</p>
             </div>
             <div>
               <h4 className="font-medium text-foreground">Model Name</h4>
